@@ -1,0 +1,251 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <script>
+        window.onload = function () {
+            const flipMatrix = matrix => (
+                matrix[0].map((column, index) => (
+                    matrix.map(row => row[index])
+                ))
+            );
+
+            const stringify = obj => (
+                JSON.stringify(obj, null, 1)
+            );
+
+            const makeTableRowColors = arr => {
+                const colors = [];
+                for (let i = 0; i < arr.length; i++) {
+                    const rowColors = [];
+                    for (let j = 0; j < arr.length; j++) {
+                        rowColors.push(i % 2 === 0 ? "white" : "lightgrey")
+                    }
+                    colors.push(rowColors)
+                }
+                return flipMatrix(colors);
+            };
+
+            //Plotly config
+            const config = {responsive: true};
+            const tableFontSize = 18;
+            const tableFontFamily = "Arial";
+            const tableCellHeight = 40;
+            const tableHeaderFillColor = "black";
+            const tableHeaderFontColor = "white";
+            const tableCellFontColor = "black";
+
+            // Summary
+            const summaryTablePlotlyData = [['Test Name', 'Threads', 'Duration', 'Rampup', 'Total Executions', 'Executions Per Second', 'Execution Time']];
+            const errorTablePlotlyData = [];
+            const slowestResultsTablePlotlyData = [];
+            const statisticsTablePlotlyData = [];
+
+            $.getJSON("TotalSummary.json", function (data) {
+                //Summary
+                summaryTablePlotlyData.push([data.testName, data.threads, data.duration, data.rampup, data.totalExecutions, data.executionsPerSecond, data.executionTime])
+
+                // Errors
+                data.results.filter(result => result.error != null).forEach(function (result) {
+                    errorTablePlotlyData.push([result.error.floStepName, result.error.message, stringify(result.metadata)])
+                });
+
+                // Slowest Results
+                data.slowestResults.forEach(function (result) {
+                    slowestResultsTablePlotlyData.push([result.elapsed, stringify(result.metadata)]);
+                });
+            });
+
+            setTimeout(function () {
+                //Plot Summary Table
+                const summaryTablePlot = [{
+                    type: 'table',
+                    align: "center",
+                    columnwidth: [5, 25],
+                    header: {
+                        values: [["<b>PROPERTY</b>"], ["<b>VALUE</b>"]],
+                        align: ["left", "left"],
+                        line: {width: 1, color: 'black'},
+                        fill: {color: tableHeaderFillColor},
+                        font: {family: tableFontFamily, size: tableFontSize, color: tableHeaderFontColor}
+                    },
+                    cells: {
+                        values: summaryTablePlotlyData,
+                        align: "left",
+                        height: tableCellHeight,
+                        line: {color: "black", width: 0},
+                        fill: {color: makeTableRowColors(flipMatrix(summaryTablePlotlyData))},
+                        font: {family: tableFontFamily, size: tableFontSize, color: tableCellFontColor}
+                    }
+                }];
+
+                const summaryTablePlotLayout = {
+                    title: 'Flo Runna Performance Summary',
+                    font: {size: 20}
+                };
+
+                Plotly.newPlot('summaryPlotly', summaryTablePlot, summaryTablePlotLayout, config);
+
+                //Plot Errors
+                const errorsTablePlot = [{
+                    type: 'table',
+                    align: "center",
+                    columnwidth: [12, 20, 30],
+                    header: {
+                        values: [["<b>FLO STEP NAME</b>"], ["<b>MESSAGE</b>"], ["<b>METADATA</b>"]],
+                        align: ["left", "left", "left"],
+                        line: {width: 0, color: 'black'},
+                        fill: {color: tableHeaderFillColor},
+                        font: {family: tableFontFamily, size: tableFontSize, color: tableHeaderFontColor}
+                    },
+                    cells: {
+                        values: flipMatrix(errorTablePlotlyData),
+                        align: "left",
+                        height: tableCellHeight,
+                        line: {color: "black", width: 0},
+                        fill: {color: makeTableRowColors(errorTablePlotlyData)},
+                        font: {family: tableFontFamily, size: tableFontSize, color: tableCellFontColor}
+                    }
+                }];
+
+                const errorsTablePlotLayout = {
+                    title: 'ERRORS',
+                    font: {size: 20}
+                };
+
+                Plotly.newPlot('errorsPlotly', errorsTablePlot, errorsTablePlotLayout, config);
+
+                //Plot Slowest Results
+                const slowestResultsPlot = [{
+                    type: 'table',
+                    align: "center",
+                    columnwidth: [12, 20],
+                    header: {
+                        values: [["<b>ELAPSED</b>"], ["<b>METADATA</b>"]],
+                        align: ["left", "left", "left"],
+                        line: {width: 1, color: 'black'},
+                        fill: {color: tableHeaderFillColor},
+                        font: {family: tableFontFamily, size: tableFontSize, color: tableHeaderFontColor}
+                    },
+                    cells: {
+                        values: flipMatrix(slowestResultsTablePlotlyData),
+                        align: "left",
+                        height: tableCellHeight,
+                        line: {color: "black", width: 0},
+                        fill: {color: makeTableRowColors(slowestResultsTablePlotlyData)},
+                        font: {family: tableFontFamily, size: tableFontSize, color: tableCellFontColor}
+                    }
+                }];
+
+                const slowestResultsPlotLayout = {
+                    title: 'SLOWEST RESULTS',
+                    font: {size: 20}
+                };
+
+                Plotly.newPlot('slowestResultsPlotly', slowestResultsPlot, slowestResultsPlotLayout, config);
+
+            }, 500);
+
+
+            const percentilePlotlyData = [];
+            const elapsedPlotlyData = [];
+            $.getJSON("floSteps.json", function (data) {
+                data.floSteps.forEach(floStep => $.getJSON(`${floStep}.json`, function (data) {
+                    percentilePlotlyData.push(
+                        {
+                            type: "bar",
+                            name: data.floStepName,
+                            x: ['P90', 'P95', 'P99'],
+                            y: [data.perc90, data.perc95, data.perc99]
+                        }
+                    );
+
+                    elapsedPlotlyData.push({
+                        type: "scatter",
+                        mode: "lines",
+                        name: data.floStepName,
+                        x: data.results.map(result => result.startTime),
+                        y: data.results.map(result => result.elapsed)
+                    });
+
+                    //Statistics
+                    statisticsTablePlotlyData.push([
+                        data.floStepName,
+                        data.perc50,
+                        data.perc80,
+                        data.perc90,
+                        data.perc95,
+                        data.perc99,
+                        data.results.filter(result => result.error != null).length
+                    ])
+                }));
+            });
+
+            setTimeout(function () {
+                // Plot Percentiles
+                const percentilesLayout = {
+                    title: 'PERCENTILES',
+                    font: {size: 18}
+                };
+
+                Plotly.newPlot('percentilePlotly', percentilePlotlyData, percentilesLayout, config);
+
+                // Plot Line Graph
+                const elapsedPlotlyLayout = {
+                    title: 'ELAPSED',
+                    font: {size: 18}
+                };
+
+                Plotly.newPlot('elapsedPlotly', elapsedPlotlyData, elapsedPlotlyLayout, config);
+
+                // Plot Statistics
+                const statiscticsTablePlot = [{
+                    type: 'table',
+                    align: "center",
+                    header: {
+                        values: [
+                            ["<b>NAME</b>"],
+                            ["<b>PERC50</b>"],
+                            ["<b>PERC80</b>"],
+                            ["<b>PERC90</b>"],
+                            ["<b>PERC95</b>"],
+                            ["<b>PERC99</b>"],
+                            ["<b>ERRORS</b>"]
+                        ],
+                        align: ["left", "left"],
+                        line: {width: 1, color: 'black'},
+                        fill: {color: tableHeaderFillColor},
+                        font: {family: tableFontFamily, size: tableFontSize, color: tableHeaderFontColor}
+                    },
+                    cells: {
+                        values: flipMatrix(statisticsTablePlotlyData),
+                        align: "left",
+                        height: tableCellHeight,
+                        line: {color: "black", width: 0},
+                        fill: {color: makeTableRowColors(statisticsTablePlotlyData)},
+                        font: {family: tableFontFamily, size: tableFontSize, color: tableCellFontColor}
+                    }
+                }];
+
+                const statisticsTablePlotLayout = {
+                    title: 'STATISTICS',
+                    font: {size: 18}
+                };
+
+                Plotly.newPlot('statisticsPlotly', statiscticsTablePlot, statisticsTablePlotLayout, config)
+            }, 500);
+        }
+    </script>
+</head>
+
+<body>
+<div id="summaryPlotly" style="height: 500px; width: 100%;"></div>
+<div id="statisticsPlotly" style="height: 500px; width: 100%;"></div>
+<div id="percentilePlotly" style="height: 500px; width: 100%;"></div>
+<div id="elapsedPlotly" style="height: 500px; width: 100%;"></div>
+<div id="errorsPlotly" style="height: 500px; width: 100%;"></div>
+<div id="slowestResultsPlotly" style="height: 500px; width: 100%;"></div>
+<script src="jquery-1.11.1.min.js"></script>
+<script src="plotly-1.52.3.min.js"></script>
+</body>
+</html>

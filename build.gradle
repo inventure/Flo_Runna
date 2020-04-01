@@ -1,0 +1,132 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+}
+
+plugins {
+    id 'groovy'
+    id 'java'
+    id 'maven-publish'
+    id 'com.jfrog.artifactory' version '4.9.0'
+}
+
+apply plugin: 'jacoco'
+
+group 'co.tala.performance.flo'
+version '0.1.0'
+
+println "version:${version}"
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+publishing {
+    publications {
+        floRunna(MavenPublication) {
+            from components.java
+        }
+
+    }
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+artifactory {
+    contextUrl = "${artifactory_contextUrl}"
+    publish {
+        repository {
+            repoKey = 'maven-snapshot-local'
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+            maven = true
+
+        }
+        defaults {
+            publications('floRunna')
+            publishArtifacts = true
+        }
+    }
+    resolve {
+        repository {
+            repoKey = 'maven-snapshot-virtual'
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+            maven = true
+
+        }
+    }
+}
+
+dependencies {
+    implementation 'org.codehaus.groovy:groovy:2.5.9'
+    implementation 'org.codehaus.groovy:groovy-json:2.5.6'
+    implementation 'com.google.code.gson:gson:2.7'
+    testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
+    testCompile('com.athaydes:spock-reports:1.7.1') {
+        transitive = false // this avoids affecting your version of Groovy/Spock
+    }
+    // slf4j is required by com.athaydes:spock-reports
+    testCompile 'org.slf4j:slf4j-api:1.7.13'
+    testCompile 'org.slf4j:slf4j-simple:1.7.13'
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Jar File Example',
+                'Implementation-Version': version
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+test {
+    jacoco {
+        destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+        classDumpDir = file("$buildDir/jacoco/classpathdumps")
+    }
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination file("${buildDir}/jacocoHtml")
+    }
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    'nothing',
+            ])
+        })
+    }
+
+}
+test.finalizedBy jacocoTestReport
+
+jacocoTestCoverageVerification {
+    afterEvaluate {
+        classDirectories = files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    'nothing',
+            ])
+        })
+    }
+
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.994
+            }
+        }
+    }
+}
+test.finalizedBy jacocoTestCoverageVerification
