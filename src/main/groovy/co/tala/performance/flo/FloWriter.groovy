@@ -43,7 +43,6 @@ class FloWriter<T> implements IFloWriter<T> {
         GString dir = getDir()
         floIO.mkdirs(dir)
         writeJson(results, dir)
-        //TODO add unit test
         writeHtml(dir)
     }
 
