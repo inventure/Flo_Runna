@@ -4,11 +4,13 @@
 <head>
     <script>
         window.onload = function () {
-            const flipMatrix = matrix => (
-                matrix[0].map((column, index) => (
-                    matrix.map(row => row[index])
-                ))
-            );
+            const flipMatrix = matrix => {
+                if (matrix && matrix.length > 0)
+                    return matrix[0].map((column, index) => (
+                        matrix.map(row => row[index])
+                    ));
+                return []
+            };
 
             const stringify = obj => (
                 JSON.stringify(obj, null, 1)
