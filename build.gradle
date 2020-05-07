@@ -14,11 +14,11 @@ plugins {
 apply plugin: 'jacoco'
 
 group 'co.tala.performance.flo'
-version '0.1.1'
+version '0.1.2'
 
 println "version:${version}"
 
-task sourcesJar(type: Jar) {
+task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
     classifier = 'sources'
 }
@@ -27,6 +27,7 @@ publishing {
     publications {
         floRunna(MavenPublication) {
             from components.java
+            artifact sourcesJar
         }
 
     }
@@ -78,7 +79,7 @@ dependencies {
 
 task fatJar(type: Jar) {
     manifest {
-        attributes 'Implementation-Title': 'Gradle Jar File Example',
+        attributes 'Implementation-Title': 'Flo-Runna Fat Jar',
                 'Implementation-Version': version
     }
     baseName = project.name + '-all'
