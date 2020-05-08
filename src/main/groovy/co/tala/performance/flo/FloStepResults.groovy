@@ -8,7 +8,7 @@ class FloStepResults<T> {
     final List<FloStepResult<T>> results
 
     FloStepResults(
-            int orderNumber
+        int orderNumber
     ) {
         this.orderNumber = orderNumber
         this.results = []

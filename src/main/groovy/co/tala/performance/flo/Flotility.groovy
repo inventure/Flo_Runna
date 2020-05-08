@@ -51,8 +51,8 @@ class Flotility<T> implements IFlotility<T> {
         finally {
             final Instant afterWorkFlo = now
             this.results.addResult(
-                    new FloStep(FloSource.TOTAL_SUMMARY, {}, Integer.MAX_VALUE),
-                    new FloStepResult(beforeWorkFlo, afterWorkFlo, workFlo.metadata, error, resultId)
+                new FloStep(FloSource.TOTAL_SUMMARY, {}, Integer.MAX_VALUE),
+                new FloStepResult(beforeWorkFlo, afterWorkFlo, workFlo.metadata, error, resultId)
             )
         }
     }

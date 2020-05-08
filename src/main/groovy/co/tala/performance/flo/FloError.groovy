@@ -8,8 +8,8 @@ class FloError {
     final String message
 
     FloError(
-            String floStepName,
-            String message
+        String floStepName,
+        String message
     ) {
         this.floStepName = floStepName
         this.message = message

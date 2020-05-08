@@ -4,7 +4,7 @@ import groovy.transform.PackageScope
 
 /**
  * A data class to represent the sequence of [FloStep]s
- * @param <T>
+ * @param < T >
  */
 @PackageScope
 class WorkFlo<T> {
@@ -12,8 +12,8 @@ class WorkFlo<T> {
     final List<FloStep> steps
 
     WorkFlo(
-            T metadata,
-            List<FloStep> steps
+        T metadata,
+        List<FloStep> steps
     ) {
         this.metadata = metadata
         this.steps = steps

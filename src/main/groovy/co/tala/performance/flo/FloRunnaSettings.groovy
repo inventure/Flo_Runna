@@ -10,10 +10,10 @@ class FloRunnaSettings {
     final String testName
 
     FloRunnaSettings(
-            int threads,
-            long duration,
-            long rampup,
-            String testName
+        int threads,
+        long duration,
+        long rampup,
+        String testName
     ) {
         this.threads = threads
         this.duration = duration
@@ -22,7 +22,7 @@ class FloRunnaSettings {
     }
 
     FloRunnaSettings(
-            String testName
+        String testName
     ) {
         def getPropValue = { String key, Object defaultValue ->
             System.getProperty(key, defaultValue.toString())
