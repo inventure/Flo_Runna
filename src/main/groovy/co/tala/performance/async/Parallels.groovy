@@ -1,4 +1,8 @@
 package co.tala.performance.async
+
+import co.tala.performance.exception.AggregateException
+import groovy.transform.Synchronized
+
 /**
  * Utility class to handle running multiple tasks in parallel
  */
@@ -10,12 +14,15 @@ class Parallels implements IParallels {
 
         PrivateThreads() {
             threads = []
+            throwables = []
             uncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
+                private final Object uncaughtExceptionHandlerLock = new Object()
+
+                @Synchronized("uncaughtExceptionHandlerLock")
                 void uncaughtException(Thread th, Throwable ex) {
                     throwables << ex
                 }
             }
-            throwables = []
         }
 
         void start(Closure action) {
@@ -65,6 +72,7 @@ class Parallels implements IParallels {
     @Override
     void waitAll() {
         List<Throwable> throwables = threads.waitAll()
-        assert throwables.isEmpty()
+        if (!throwables.isEmpty())
+            throw new AggregateException(throwables)
     }
 }

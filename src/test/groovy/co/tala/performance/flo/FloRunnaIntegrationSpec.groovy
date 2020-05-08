@@ -1,5 +1,6 @@
 package co.tala.performance.flo
 
+import co.tala.performance.exception.AggregateException
 import org.codehaus.groovy.runtime.powerassert.PowerAssertionError
 import spock.lang.Specification
 
@@ -39,8 +40,8 @@ class FloRunnaIntegrationSpec extends Specification {
                         .build()
             }
 
-        then: "a PowerAssertionError should be thrown"
-            thrown PowerAssertionError
+        then: "an AggregateException should be thrown"
+            thrown AggregateException
     }
 
     def "flo runna repeat step spec"() {
@@ -63,8 +64,8 @@ class FloRunnaIntegrationSpec extends Specification {
                         .build()
             }
 
-        then: "a PowerAssertionError should be thrown"
-            thrown PowerAssertionError
+        then: "an AggregateException should be thrown"
+            thrown AggregateException
     }
 
     private void sleepFor(long lowerBound, long upperBound) {
