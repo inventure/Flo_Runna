@@ -6,7 +6,7 @@ import java.time.Instant
 
 /**
  * The performance result for a [FloStep]
- * @param <T>
+ * @param < T >
  */
 @PackageScope
 class FloStepResult<T> {
@@ -18,11 +18,11 @@ class FloStepResult<T> {
     final String resultId
 
     FloStepResult(
-            Instant startTime,
-            Instant endTime,
-            T metadata,
-            FloError error,
-            String resultId
+        Instant startTime,
+        Instant endTime,
+        T metadata,
+        FloError error,
+        String resultId
     ) {
         this.startTime = startTime
         this.endTime = endTime

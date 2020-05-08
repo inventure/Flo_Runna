@@ -26,10 +26,10 @@ class FloRunna<T> {
     }
 
     FloRunna(
-            IParallels parallels,
-            FloRunnaSettings settings,
-            IFlotility flotility,
-            IFloWriter floWriter
+        IParallels parallels,
+        FloRunnaSettings settings,
+        IFlotility flotility,
+        IFloWriter floWriter
     ) {
         this.parallels = parallels
         this.settings = settings
@@ -44,8 +44,8 @@ class FloRunna<T> {
      * @return
      */
     Map<String, FloExecutionResult<T>> execute(
-            @ClosureParams(value = SimpleType.class, options = "co.tala.performance.flo.WorkFloBuilder")
-                    Closure<WorkFlo<T>> workFloClosure
+        @ClosureParams(value = SimpleType.class, options = "co.tala.performance.flo.WorkFloBuilder")
+            Closure<WorkFlo<T>> workFloClosure
     ) {
         Map<String, FloExecutionResult<T>> results
         final int threads = settings.threads

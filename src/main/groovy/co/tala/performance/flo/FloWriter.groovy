@@ -53,20 +53,20 @@ class FloWriter<T> implements IFloWriter<T> {
     private void writeJson(Map<String, FloExecutionResult<T>> results, String dir) {
         List<String> floStepNames = []
         results
-                .sort { it.value.floStepOrder }
-                .each { Map.Entry<String, FloExecutionResult<T>> entry ->
-                    floStepNames.add(entry.key)
-                    String jsonString = JsonOutput.prettyPrint(gson.toJson(entry.value))
-                    floIO.writeToFile("${dir}/${entry.key}.json", jsonString)
-                }
+            .sort { it.value.floStepOrder }
+            .each { Map.Entry<String, FloExecutionResult<T>> entry ->
+                floStepNames.add(entry.key)
+                String jsonString = JsonOutput.prettyPrint(gson.toJson(entry.value))
+                floIO.writeToFile("${dir}/${entry.key}.json", jsonString)
+            }
         floIO.writeToFile("${dir}/floSteps.json", gson.toJson([floSteps: floStepNames]))
     }
 
     private void writeHtml(String dir) {
         [
-                "index.html",
-                "plotly-1.52.3.min.js",
-                "jquery-1.11.1.min.js"
+            "index.html",
+            "plotly-1.52.3.min.js",
+            "jquery-1.11.1.min.js"
         ].each { String fileName ->
             InputStream inputStream = this.class.getResourceAsStream("/${fileName}")
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))

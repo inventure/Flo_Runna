@@ -30,13 +30,13 @@ class FloExecutionResult<T> {
     final List<FloStepResult<T>> slowestResults
 
     FloExecutionResult(
-            int floStepOrder,
-            String floStepName,
-            FloRunnaSettings settings,
-            Instant startTime,
-            Instant endTime,
-            String executionId,
-            List<FloStepResult<T>> results
+        int floStepOrder,
+        String floStepName,
+        FloRunnaSettings settings,
+        Instant startTime,
+        Instant endTime,
+        String executionId,
+        List<FloStepResult<T>> results
     ) {
         this.floStepOrder = floStepOrder
         this.testName = settings.testName

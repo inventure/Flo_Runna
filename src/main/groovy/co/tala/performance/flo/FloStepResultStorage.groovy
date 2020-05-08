@@ -7,7 +7,7 @@ import java.time.Instant
 
 /**
  * Stores all performance results for all [FloStep]s
- * @param < T >
+ * @param <T >
  */
 @PackageScope
 class FloStepResultStorage<T> implements IFloStepResultStorage<T> {

@@ -12,9 +12,9 @@ class FloStep {
     final int orderNumber
 
     FloStep(
-            String name,
-            Closure action,
-            int orderNumber
+        String name,
+        Closure action,
+        int orderNumber
     ) {
         this.name = name
         this.action = action
