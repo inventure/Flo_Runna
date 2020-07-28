@@ -3,7 +3,6 @@ package co.tala.performance.flo
 import co.tala.performance.converter.InstantConverter
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import groovy.json.JsonOutput
 import groovy.transform.PackageScope
 
 import java.time.Instant
@@ -31,7 +30,10 @@ class FloWriter<T> implements IFloWriter<T> {
     }
 
     private static Gson initGson() {
-        new GsonBuilder().registerTypeAdapter(Instant.class, new InstantConverter()).create()
+        new GsonBuilder()
+            .setPrettyPrinting()
+            .registerTypeAdapter(Instant.class, new InstantConverter())
+            .create()
     }
 
     /**
@@ -56,8 +58,7 @@ class FloWriter<T> implements IFloWriter<T> {
             .sort { it.value.floStepOrder }
             .each { Map.Entry<String, FloExecutionResult<T>> entry ->
                 floStepNames.add(entry.key)
-                String jsonString = JsonOutput.prettyPrint(gson.toJson(entry.value))
-                floIO.writeToFile("${dir}/${entry.key}.json", jsonString)
+                floIO.writeToFile("${dir}/${entry.key}.json", gson.toJson(entry.value))
             }
         floIO.writeToFile("${dir}/floSteps.json", gson.toJson([floSteps: floStepNames]))
     }
@@ -68,10 +69,12 @@ class FloWriter<T> implements IFloWriter<T> {
             "plotly-1.52.3.min.js",
             "jquery-1.11.1.min.js"
         ].each { String fileName ->
-            InputStream inputStream = this.class.getResourceAsStream("/${fileName}")
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))
-            String content = floIO.readFromBufferedReader(reader)
-            floIO.writeToFile("${dir}/${fileName}", content)
+            this.class.getResourceAsStream("/${fileName}").withCloseable { InputStream inputStream ->
+                new BufferedReader(new InputStreamReader(inputStream)).withCloseable { BufferedReader reader ->
+                    String content = floIO.readFromBufferedReader(reader)
+                    floIO.writeToFile("${dir}/${fileName}", content)
+                }
+            }
         }
     }
 }

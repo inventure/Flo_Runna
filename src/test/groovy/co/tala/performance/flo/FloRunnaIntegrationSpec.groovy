@@ -1,7 +1,6 @@
 package co.tala.performance.flo
 
 import co.tala.performance.exception.AggregateException
-import org.codehaus.groovy.runtime.powerassert.PowerAssertionError
 import spock.lang.Specification
 
 class FloRunnaIntegrationSpec extends Specification {
