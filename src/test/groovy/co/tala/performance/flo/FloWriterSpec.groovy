@@ -3,7 +3,6 @@ package co.tala.performance.flo
 import co.tala.performance.converter.InstantConverter
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import groovy.json.JsonOutput
 import spock.lang.Specification
 
 import java.time.Instant
@@ -18,7 +17,10 @@ class FloWriterSpec extends Specification {
         floIOMock = Mock()
         settings = ModelFactory.createFloRunnaSettings()
         sut = new FloWriter(settings, floIOMock)
-        gson = new GsonBuilder().registerTypeAdapter(Instant.class, new InstantConverter()).create()
+        gson = new GsonBuilder()
+            .setPrettyPrinting()
+            .registerTypeAdapter(Instant.class, new InstantConverter())
+            .create()
     }
 
     def "it should initialize with default constructor"() {
@@ -97,7 +99,7 @@ class FloWriterSpec extends Specification {
     }
 
     private boolean assertJson(String content, FloExecutionResult result) {
-        assert content == JsonOutput.prettyPrint(gson.toJson(result))
+        assert content == gson.toJson(result)
         true
     }
 

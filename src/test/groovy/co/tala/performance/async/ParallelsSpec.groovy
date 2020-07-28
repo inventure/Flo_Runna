@@ -1,7 +1,6 @@
 package co.tala.performance.async
 
 import co.tala.performance.exception.AggregateException
-import org.codehaus.groovy.runtime.powerassert.PowerAssertionError
 import spock.lang.Specification
 
 class ParallelsSpec extends Specification {
