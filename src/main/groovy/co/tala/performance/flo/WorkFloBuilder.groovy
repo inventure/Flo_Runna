@@ -6,7 +6,7 @@ package co.tala.performance.flo
  */
 class WorkFloBuilder<T> {
     private final List<FloStep> floSteps
-    private T metadata
+    private Closure<T> metadata
     private int count
 
     WorkFloBuilder() {
@@ -15,11 +15,22 @@ class WorkFloBuilder<T> {
     }
 
     /**
-     * Sets the generic metadata for a [WorkFlo]
+     * Sets the generic metadata for a [WorkFlo]. Value is realized before the [WorkFlo] execution begins.
      * @param metadata
      * @return
      */
+    @Deprecated
     WorkFloBuilder setMetadata(T metadata) {
+        this.metadata = { metadata }
+        this
+    }
+
+    /**
+     * Sets the generic metadata for a [WorkFlo]. Value will be realized after [WorkFlo] is executed.
+     * @param metadata
+     * @return
+     */
+    WorkFloBuilder setMetadata(Closure<T> metadata) {
         this.metadata = metadata
         this
     }

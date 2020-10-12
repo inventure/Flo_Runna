@@ -8,11 +8,19 @@ import groovy.transform.PackageScope
  */
 @PackageScope
 class WorkFlo<T> {
-    final T metadata
+    final Closure<T> metadata
     final List<FloStep> steps
 
     WorkFlo(
         T metadata,
+        List<FloStep> steps
+    ) {
+        this.metadata = { metadata }
+        this.steps = steps
+    }
+
+    WorkFlo(
+        Closure<T> metadata,
         List<FloStep> steps
     ) {
         this.metadata = metadata
