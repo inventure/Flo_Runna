@@ -29,9 +29,11 @@ class FloStepResultStorage<T> implements IFloStepResultStorage<T> {
     @Override
     @Synchronized("addResultLock")
     void addResult(FloStep floStep, FloStepResult<T> result) {
-        if (!map.containsKey(floStep.name))
-            map[floStep.name] = new FloStepResults<T>(floStep.orderNumber)
-        map[floStep.name].results << result
+        if (settings.outputEnabled) {
+            if (!map.containsKey(floStep.name))
+                map[floStep.name] = new FloStepResults<T>(floStep.orderNumber)
+            map[floStep.name].results << result
+        }
     }
 
     /**

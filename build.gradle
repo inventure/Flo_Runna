@@ -14,7 +14,7 @@ plugins {
 apply plugin: 'jacoco'
 
 group 'co.tala.performance.flo'
-version '0.1.4'
+version '0.1.5'
 
 println "version:${version}"
 
