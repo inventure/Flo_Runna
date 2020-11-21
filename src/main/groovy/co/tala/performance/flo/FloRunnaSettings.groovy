@@ -8,6 +8,7 @@ class FloRunnaSettings {
     final long duration
     final long rampup
     final String testName
+    final boolean outputEnabled
 
     FloRunnaSettings(
         int threads,
@@ -19,6 +20,21 @@ class FloRunnaSettings {
         this.duration = duration
         this.rampup = rampup
         this.testName = testName
+        this.outputEnabled = true
+    }
+
+    FloRunnaSettings(
+        int threads,
+        long duration,
+        long rampup,
+        String testName,
+        boolean outputEnabled
+    ) {
+        this.threads = threads
+        this.duration = duration
+        this.rampup = rampup
+        this.testName = testName
+        this.outputEnabled = outputEnabled
     }
 
     FloRunnaSettings(
@@ -35,6 +51,7 @@ class FloRunnaSettings {
         this.threads = getPropValue("threads", defaultThreads).toInteger()
         this.duration = getPropValue("duration", defaultDuration).toLong()
         this.rampup = getPropValue("rampup", defaultRampup).toLong()
+        this.outputEnabled = getPropValue("outputEnabled", "true").toBoolean()
         this.testName = testName
     }
 }

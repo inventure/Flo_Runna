@@ -16,6 +16,7 @@ class FloRunnaSettingsSpec extends Specification {
                 it.duration == 8000
                 it.rampup == 1000
                 it.testName == testName
+                it.outputEnabled
             }
     }
 
@@ -24,6 +25,7 @@ class FloRunnaSettingsSpec extends Specification {
             System.setProperty("threads", "1")
             System.setProperty("duration", "2")
             System.setProperty("rampup", "3")
+            System.setProperty("outputEnabled", "false")
             String testName = "testName"
 
         when: "FloRunnaSettings is initialized"
@@ -35,6 +37,7 @@ class FloRunnaSettingsSpec extends Specification {
                 it.duration == 2
                 it.rampup == 3
                 it.testName == testName
+                !it.outputEnabled
             }
     }
 
@@ -54,6 +57,26 @@ class FloRunnaSettingsSpec extends Specification {
                 it.duration == duration
                 it.rampup == rampup
                 it.testName == testName
+            }
+    }
+
+    def "FloRunnaSettings should initialize with override settings 2"() {
+        given: "threads, duration, and rampup are set"
+            int threads = 2
+            long duration = 4
+            long rampup = 6
+            String testName = "testName"
+
+        when: "FloRunnaSettings is initialized"
+            FloRunnaSettings result = new FloRunnaSettings(threads, duration, rampup, testName, false)
+
+        then: "the threads, duration, and rampup should be equal to the constructor overrides"
+            verifyAll(result) {
+                it.threads == threads
+                it.duration == duration
+                it.rampup == rampup
+                it.testName == testName
+                !it.outputEnabled
             }
     }
 }

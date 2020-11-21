@@ -71,7 +71,9 @@ class FloRunna<T> {
         finally {
             final Instant endTime = now
             results = flotility.results.toFloExecutionResults(startTime, endTime)
-            floWriter.writeResults(results)
+            if (settings.outputEnabled) {
+                floWriter.writeResults(results)
+            }
         }
         results
     }
