@@ -41,7 +41,9 @@ class FloRunnaSettings {
         String testName
     ) {
         def getPropValue = { String key, Object defaultValue ->
-            System.getProperty(key, defaultValue.toString())
+            Optional.of(System.getProperty(key, defaultValue.toString()))
+                .filter({ value -> value != null && !value.isEmpty() })
+                .orElse(defaultValue as String)
         }
 
         int defaultThreads = 8

@@ -79,4 +79,25 @@ class FloRunnaSettingsSpec extends Specification {
                 !it.outputEnabled
             }
     }
+
+    def "FloRunnaSettings should handle cases where System property might be empty or null"() {
+        given: "if the System has set a property to empty string"
+            System.setProperty("threads", "")
+            System.setProperty("outputEnabled", "")
+            System.clearProperty("duration") // You can't set a property to have null value, so clear
+            System.clearProperty("rampup")
+            String testName = "testName"
+
+        when: "FloRunnaSettings is initialized"
+            FloRunnaSettings result = new FloRunnaSettings(testName)
+
+        then: "the threads, duration, and rampup should be equal to the constructor overrides (values from FloRunnaSettings class)"
+            verifyAll(result) {
+                it.threads == 8
+                it.duration == 8000
+                it.rampup == 1000
+                it.testName == testName
+                it.outputEnabled
+            }
+    }
 }
