@@ -38,14 +38,14 @@
             const tableCellFontColor = "black";
 
             // Summary
-            const summaryTablePlotlyData = [['Test Name', 'Threads', 'Duration', 'Rampup', 'Total Executions', 'Executions Per Second', 'Execution Time']];
+            const summaryTablePlotlyData = [['Test Name', 'Threads', 'Duration', 'Rampup', 'Iterations', 'Total Executions', 'Executions Per Second', 'Execution Time']];
             const errorTablePlotlyData = [];
             const slowestResultsTablePlotlyData = [];
             const statisticsTablePlotlyData = [];
 
             $.getJSON("TotalSummary.json", function (data) {
                 //Summary
-                summaryTablePlotlyData.push([data.testName, data.threads, data.duration, data.rampup, data.totalExecutions, data.executionsPerSecond, data.executionTime])
+                summaryTablePlotlyData.push([data.testName, data.threads, data.duration, data.rampup, data.iterations, data.totalExecutions, data.executionsPerSecond, data.executionTime])
 
                 // Errors
                 data.results.filter(result => result.error != null).forEach(function (result) {

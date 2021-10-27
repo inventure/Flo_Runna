@@ -66,6 +66,37 @@ class FloRunnaIntegrationSpec extends Specification {
             thrown AggregateException
     }
 
+    def "flo runna repeat step with iterations spec"() {
+        given:
+            FloRunna floRunna = new FloRunna(
+                new FloRunnaSettings(
+                    "Flo Runna Repeat Step Test",
+                    8,
+                    50,
+                    1000
+                )
+            )
+
+        when: "flo runna is executed with 5 steps, each with various execution times, and some randomly throw exceptions"
+            floRunna.executeIterations { WorkFloBuilder workFloBuilder ->
+                workFloBuilder
+                    .setMetadata(metadata)
+                    .addStep("repeat step") {
+                        sleepFor(10, 30)
+                    }
+                    .addStep("non repeat step") {
+                        sleepFor(50, 200)
+                    }
+                    .addStep("repeat step") {
+                        sleepFor(10, 30)
+                    }
+                    .build()
+            }
+
+        then: "an AggregateException should be thrown"
+            thrown AggregateException
+    }
+
     private void sleepFor(long lowerBound, long upperBound) {
         def duration = (nextLong() % lowerBound) + (upperBound - lowerBound)
         sleep(duration)

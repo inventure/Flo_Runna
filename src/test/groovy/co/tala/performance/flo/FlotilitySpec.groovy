@@ -16,7 +16,7 @@ class FlotilitySpec extends Specification {
         given: "a Workflo exists"
             LinkedHashMap<String, String> metadata = ["foo": "bar"]
             WorkFlo workFlo = new WorkFloBuilder()
-                    .setMetadata(metadata)
+                    .setMetadata({metadata})
                     .addStep("step1", { sleep(10) })
                     .addStep("step2", { sleep(20) })
                     .addStep("step3", { sleep(30) })
@@ -73,14 +73,14 @@ class FlotilitySpec extends Specification {
         given: "a Workflo exists, where some of the steps throw exceptions"
             LinkedHashMap<String, String> metadata = ["foo": "bar"]
             WorkFlo workFloWithNoExceptions = new WorkFloBuilder()
-                    .setMetadata(metadata)
+                    .setMetadata({metadata})
                     .addStep("step1", { sleep(10) })
                     .addStep("step2", { sleep(20) })
                     .addStep("step3", { sleep(30) })
                     .build()
 
             WorkFlo workFloWithOneException = new WorkFloBuilder()
-                    .setMetadata(metadata)
+                    .setMetadata({metadata})
                     .addStep("step1", { sleep(10) })
                     .addStep("step2", { sleep(20); throw new Exception("exception 2") })
                     .addStep("step3", { sleep(30) })

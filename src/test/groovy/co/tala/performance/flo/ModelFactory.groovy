@@ -36,6 +36,10 @@ class ModelFactory {
         new FloRunnaSettings(1, 2, 3, "test name example")
     }
 
+    static FloRunnaSettings createFloRunnaSettingsIterations() {
+        new FloRunnaSettings("test name example", 1, 2, 3)
+    }
+
     private static FloError createFloError() {
         new FloError(randomUUID(), randomUUID())
     }
