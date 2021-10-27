@@ -14,6 +14,7 @@ class FloRunnaSettingsSpec extends Specification {
             verifyAll(result) {
                 it.threads == 8
                 it.duration == 8000
+                it.iterations == 0
                 it.rampup == 1000
                 it.testName == testName
                 it.outputEnabled
@@ -24,6 +25,7 @@ class FloRunnaSettingsSpec extends Specification {
         given: "system properties are set for threads, duration, and rampup"
             System.setProperty("threads", "1")
             System.setProperty("duration", "2")
+            System.setProperty("iterations", "200")
             System.setProperty("rampup", "3")
             System.setProperty("outputEnabled", "false")
             String testName = "testName"
@@ -35,10 +37,17 @@ class FloRunnaSettingsSpec extends Specification {
             verifyAll(result) {
                 it.threads == 1
                 it.duration == 2
+                it.iterations == 200
                 it.rampup == 3
                 it.testName == testName
                 !it.outputEnabled
             }
+            // clear out to not interfere with other tests
+            System.clearProperty("threads")
+            System.clearProperty("duration")
+            System.clearProperty("iterations")
+            System.clearProperty("rampup")
+            System.clearProperty("outputEnabled")
     }
 
     def "FloRunnaSettings should initialize with override settings"() {
@@ -95,7 +104,34 @@ class FloRunnaSettingsSpec extends Specification {
             verifyAll(result) {
                 it.threads == 8
                 it.duration == 8000
+                it.iterations == 0
                 it.rampup == 1000
+                it.testName == testName
+                it.outputEnabled
+            }
+    }
+
+    def "FloRunnaSettings should initialize with settings from system for iteration run"() {
+        given: "we have setup various inputs for FloRunnaSettings call"
+            int threads = 2
+            int iterations = 10
+            long rampup = 6
+            String testName = "testName"
+
+        when: "FloRunnaSettings is initialized for iteration run"
+            FloRunnaSettings result = new FloRunnaSettings(
+                testName,
+                threads,
+                iterations,
+                rampup
+            )
+
+        then: "the threads, duration, and rampup should be equal to the values in system properties"
+            verifyAll(result) {
+                it.threads == threads
+                it.duration == 0
+                it.iterations == iterations
+                it.rampup == rampup
                 it.testName == testName
                 it.outputEnabled
             }

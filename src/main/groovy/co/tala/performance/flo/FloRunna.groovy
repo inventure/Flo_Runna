@@ -6,6 +6,7 @@ import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
 
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Convert your Spock tests into Load tests. Use [FloRunna] to simulate a workflow in parallel
@@ -49,6 +50,7 @@ class FloRunna<T> {
     ) {
         Map<String, FloExecutionResult<T>> results
         final int threads = settings.threads
+        final int iterations = settings.iterations
         final long duration = settings.duration
         final long rampup = settings.rampup
         final Instant startTime = now
@@ -65,6 +67,59 @@ class FloRunna<T> {
                     }
                 }
                 sleep(10)
+            }
+            parallels.waitAll()
+        }
+        finally {
+            final Instant endTime = now
+            results = flotility.results.toFloExecutionResults(startTime, endTime)
+            if (settings.outputEnabled) {
+                floWriter.writeResults(results)
+            }
+        }
+        results
+    }
+
+    /**
+     * Executes a [WorkFlo] in parallel as a load test. Pass a [Closure<WorkFlo<T>>], which will be run repetitively,
+     * (based on the number of specified) in parallel until the end of the test run. The threads, iterations, and
+     * rampup are defined in [FloRunnaSettings].
+     * @param workFloClosure
+     * @return
+     */
+    Map<String, FloExecutionResult<T>> executeIterations(
+        @ClosureParams(value = SimpleType.class, options = "co.tala.performance.flo.WorkFloBuilder")
+            Closure<WorkFlo<T>> workFloClosure
+    ) {
+        if (settings.iterations <= 0) {
+            throw new IllegalArgumentException("FloRunnaSettings 'iterations' value not setup")
+        }
+
+        Map<String, FloExecutionResult<T>> results
+        final int threads = settings.threads
+        final int iterations = settings.iterations
+        final long rampup = settings.rampup
+        final Instant startTime = now
+        final def getElapsed = { now.toEpochMilli() - startTime.toEpochMilli() }
+        AtomicInteger currentIteration = new AtomicInteger(1)
+
+        try {
+            int iterationsPerThread = Math.round(iterations / threads).toInteger()
+            while (currentIteration <= iterations) {
+                final long elapsed = getElapsed()
+                final int activeThreadCount = elapsed > rampup ? threads : (Math.ceil(threads * (elapsed / rampup))).toInteger()
+                while (parallels.activeThreadCount < activeThreadCount) {
+                    parallels.runAsync {
+                        int iterationChunkCount = 1
+                        while(iterationChunkCount <= iterationsPerThread && (currentIteration <= iterations)) {
+                            WorkFlo<T> workFlo = workFloClosure(new WorkFloBuilder<T>())
+                            flotility.executeWorkFlo(workFlo)
+                            currentIteration.getAndIncrement()
+                            iterationChunkCount += 1
+                        }
+                    }
+                }
+                Thread.sleep(10)
             }
             parallels.waitAll()
         }

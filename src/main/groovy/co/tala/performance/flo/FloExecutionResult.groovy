@@ -13,6 +13,7 @@ class FloExecutionResult<T> {
     final String floStepName
     final int threads
     final long duration
+    final long iterations
     final long rampup
     final long perc50
     final long perc80
@@ -43,6 +44,7 @@ class FloExecutionResult<T> {
         this.floStepName = floStepName
         this.threads = settings.threads
         this.duration = settings.duration
+        this.iterations = settings.iterations
         this.rampup = settings.rampup
         this.startTime = startTime
         this.endTime = endTime
