@@ -8,13 +8,13 @@ plugins {
     id 'groovy'
     id 'java'
     id 'maven-publish'
-    id 'com.jfrog.artifactory' version '4.9.0'
+    id 'com.jfrog.artifactory' version '4.18.3'
 }
 
 apply plugin: 'jacoco'
 
 group 'co.tala.performance.flo'
-version '0.1.6'
+version '0.1.7'
 
 println "version:${version}"
 
@@ -67,7 +67,7 @@ artifactory {
 dependencies {
     implementation 'org.codehaus.groovy:groovy:2.5.9'
     implementation 'org.codehaus.groovy:groovy-json:2.5.6'
-    implementation 'com.google.code.gson:gson:2.7'
+    implementation 'com.google.code.gson:gson:2.8.7'
     testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
     testCompile('com.athaydes:spock-reports:1.7.1') {
         transitive = false // this avoids affecting your version of Groovy/Spock
@@ -79,10 +79,9 @@ dependencies {
 
 task fatJar(type: Jar) {
     manifest {
-        attributes 'Implementation-Title': 'Flo-Runna Fat Jar',
-                'Implementation-Version': version
+        attributes 'Implementation-Title': 'Flo-Runna Fat Jar', 'Implementation-Version': archiveVersion.get()
     }
-    baseName = project.name + '-all'
+    archiveBaseName.set(project.name + '-all')
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
@@ -101,9 +100,9 @@ jacocoTestReport {
         html.destination file("${buildDir}/jacocoHtml")
     }
     afterEvaluate {
-        classDirectories = files(classDirectories.files.collect {
+        classDirectories.from = files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                    'nothing',
+                'nothing',
             ])
         })
     }
@@ -113,9 +112,9 @@ test.finalizedBy jacocoTestReport
 
 jacocoTestCoverageVerification {
     afterEvaluate {
-        classDirectories = files(classDirectories.files.collect {
+        classDirectories.from = files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                    'nothing',
+                'nothing',
             ])
         })
     }
