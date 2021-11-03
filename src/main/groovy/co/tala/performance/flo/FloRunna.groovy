@@ -2,6 +2,7 @@ package co.tala.performance.flo
 
 import co.tala.performance.async.IParallels
 import co.tala.performance.async.Parallels
+import co.tala.performance.utils.FloLogger
 import groovy.transform.stc.ClosureParams
 import groovy.transform.stc.SimpleType
 
@@ -82,8 +83,8 @@ class FloRunna<T> {
 
     /**
      * Executes a [WorkFlo] in parallel as a load test. Pass a [Closure<WorkFlo<T>>], which will be run repetitively,
-     * (based on the number of specified) in parallel until the end of the test run. The threads, iterations, and
-     * rampup are defined in [FloRunnaSettings].
+     * (based on the number of iterations specified) in parallel until the end of the test run. The threads,
+     * iterations, and rampup are defined in [FloRunnaSettings].
      * @param workFloClosure
      * @return
      */
@@ -102,24 +103,34 @@ class FloRunna<T> {
         final Instant startTime = now
         final def getElapsed = { now.toEpochMilli() - startTime.toEpochMilli() }
         AtomicInteger currentIteration = new AtomicInteger(1)
+        FloLogger logger = new FloLogger(settings.debug)
 
         try {
             int iterationsPerThread = Math.round(iterations / threads).toInteger()
+            logger.debug("iterations per thread: $iterationsPerThread, threads: $threads")
+
             while (currentIteration <= iterations) {
                 final long elapsed = getElapsed()
                 final int activeThreadCount = elapsed > rampup ? threads : (Math.ceil(threads * (elapsed / rampup))).toInteger()
-                while (parallels.activeThreadCount < activeThreadCount) {
+                // each thread gets a certain chunk of work to do
+                AtomicInteger iterationChunkCount = new AtomicInteger(1)
+                while (parallels.activeThreadCount <= activeThreadCount) {
                     parallels.runAsync {
-                        int iterationChunkCount = 1
-                        while(iterationChunkCount <= iterationsPerThread && (currentIteration <= iterations)) {
+                        // additional check on currentIteration for times when the iterations do not break
+                        // down into nice chucks with the number of threads under test. So if we have 5
+                        // iterations, but only 3 threads, the third thread will only need 1 iteration.
+                        while(iterationChunkCount.get() <= iterationsPerThread && (currentIteration <= iterations)) {
+                            currentIteration.set(currentIteration.incrementAndGet())
+                            iterationChunkCount.set(iterationChunkCount.incrementAndGet())
                             WorkFlo<T> workFlo = workFloClosure(new WorkFloBuilder<T>())
                             flotility.executeWorkFlo(workFlo)
-                            currentIteration.getAndIncrement()
-                            iterationChunkCount += 1
                         }
                     }
                 }
                 Thread.sleep(10)
+                if (currentIteration <= iterations) {
+                    logger.debug("currentIteration: $currentIteration of iterations: $iterations")
+                }
             }
             parallels.waitAll()
         }
