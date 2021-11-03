@@ -11,6 +11,7 @@ class FloRunnaSettings {
     final long rampup
     final String testName
     final boolean outputEnabled
+    private boolean debug = false
 
     FloRunnaSettings(
         int threads,
@@ -75,5 +76,14 @@ class FloRunnaSettings {
         this.rampup = rampup
         this.testName = testName
         this.outputEnabled = true
+    }
+
+    FloRunnaSettings setDebug(boolean debugEnabled) {
+        this.debug = debugEnabled
+        this
+    }
+
+    def getDebug() {
+        this.debug
     }
 }
