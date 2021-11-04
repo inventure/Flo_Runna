@@ -1,11 +1,17 @@
 package co.tala.performance.flo
 
 import co.tala.performance.exception.AggregateException
+import co.tala.performance.utils.FloLogger
 import spock.lang.Specification
+
+import java.time.Instant
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 
 class FloRunnaIntegrationSpec extends Specification {
     private Random random
     private Closure<Object> metadata
+    FloLogger logger = new FloLogger(true)
 
     def setup() {
         random = new Random()
@@ -66,35 +72,126 @@ class FloRunnaIntegrationSpec extends Specification {
             thrown AggregateException
     }
 
-    def "flo runna repeat step with iterations spec"() {
-        given:
+    def "flo runna with iterations amount small and duration long spec"() {
+        Long duration = 15000
+        Integer iterations = 10
+        given: "setting up FloRunna to run small amount of iterations while duration is set for long time"
             FloRunna floRunna = new FloRunna(
                 new FloRunnaSettings(
+                    3,
+                    duration,
+                    1000,
+                    10,
                     "Flo Runna Repeat Step Test",
-                    8,
-                    50,
-                    1000
-                )
+                    true
+                ).setDebug(true)
             )
 
-        when: "flo runna is executed with 5 steps, each with various execution times, and some randomly throw exceptions"
-            floRunna.executeIterations { WorkFloBuilder workFloBuilder ->
+        when: "flo runna is executed with some randomly throw exceptions and it should stop relatively quick"
+            Instant startTime = getNow()
+            Map<String, FloExecutionResult> results = floRunna.execute { WorkFloBuilder workFloBuilder ->
                 workFloBuilder
                     .setMetadata(metadata)
                     .addStep("repeat step") {
-                        sleepFor(10, 30)
+                        logger.debug("repeat step 1")
                     }
                     .addStep("non repeat step") {
-                        sleepFor(50, 200)
+                        logger.debug("non repeat step")
                     }
                     .addStep("repeat step") {
-                        sleepFor(10, 30)
+                        logger.debug("repeat step 2")
                     }
                     .build()
             }
+            Instant finishTime = getNow()
+            results.each { key, result ->
+                assert(result.iterations == iterations)
+            }
 
-        then: "an AggregateException should be thrown"
-            thrown AggregateException
+        then: "the total runtime should be less than the duration"
+            (finishTime.toEpochMilli() - startTime.toEpochMilli()) < duration
+    }
+
+    def "flo runna with iterations amount large and duration small spec"() {
+        Long duration = 10
+        Integer iterations = 100
+        given: "setting up FloRunna to run large amount of iterations while duration is set for short period of time"
+            FloRunna floRunna = new FloRunna(
+                new FloRunnaSettings(
+                    3,
+                    duration,
+                    1000,
+                    iterations,
+                    "Flo Runna Repeat Step Test",
+                    true
+                ).setDebug(false)
+            )
+
+        when: "flo runna is executed with some randomly throw exceptions and it should stop relatively quick"
+            Instant startTime = getNow()
+            Map<String, FloExecutionResult<WorkFloBuilder>> results = floRunna.execute { WorkFloBuilder workFloBuilder ->
+                workFloBuilder
+                    .setMetadata(metadata)
+                    .addStep("repeat step") {
+                        logger.debug("repeat step 1")
+                    }
+                    .addStep("non repeat step") {
+                        logger.debug("non repeat step")
+                    }
+                    .addStep("repeat step") {
+                        logger.debug("repeat step 2")
+                    }
+                    .build()
+            }
+            Instant finishTime = getNow()
+            results.each { key, result ->
+                assert(result.iterations == iterations)
+            }
+
+        then: "the execution time for the steps should be less than specified duration"
+            (finishTime.toEpochMilli() - startTime.toEpochMilli()) > duration
+    }
+
+    def "flo runna with no iteration count specified and duration time set spec"() {
+        Long duration = 3000
+        Integer iterations = 0
+        given: "setting up FloRunna to run with a duration set, but no iterations specified"
+            FloRunna floRunna = new FloRunna(
+                new FloRunnaSettings(
+                    4,
+                    duration,
+                    1000,
+                    "Flo Runna Repeat Step Test"
+                ).setDebug(false)
+            )
+
+        when: "flo runna is executed with some randomly throw exceptions and it should stop relatively quick"
+            Instant startTime = getNow()
+            AtomicInteger execution = new AtomicInteger(0)
+            Map<String, FloExecutionResult<WorkFloBuilder>> results = floRunna.execute { WorkFloBuilder workFloBuilder ->
+                workFloBuilder
+                    .setMetadata(metadata)
+                    .addStep("increment counter") {
+                        execution.set(execution.getAndIncrement())
+                    }
+                    .addStep("repeat step") {
+                        logger.debug("${execution.get()} repeat step 1")
+                    }
+                    .addStep("non repeat step") {
+                        logger.debug("${execution.get()} non repeat step")
+                    }
+                    .addStep("repeat step") {
+                        logger.debug("${execution.get()} repeat step 2")
+                    }
+                    .build()
+            }
+            Instant finishTime = getNow()
+            results.each { key, result ->
+                assert(result.iterations == iterations)
+            }
+
+        then: "the execution time for the steps should be greater than specified duration"
+            (finishTime.toEpochMilli() - startTime.toEpochMilli()) > duration
     }
 
     private void sleepFor(long lowerBound, long upperBound) {
@@ -108,4 +205,7 @@ class FloRunnaIntegrationSpec extends Specification {
         Math.abs(random.nextLong())
     }
 
+    private static Instant getNow() {
+        Instant.now()
+    }
 }

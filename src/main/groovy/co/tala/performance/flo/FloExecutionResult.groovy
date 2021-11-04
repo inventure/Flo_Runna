@@ -66,4 +66,8 @@ class FloExecutionResult<T> {
     private long getPercentile(double percentile) {
         totalExecutions > 0 ? orderedResponseTimes[Math.floor(totalExecutions * percentile)] : 0
     }
+
+    long getIterations() {
+        this.iterations
+    }
 }
