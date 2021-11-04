@@ -104,8 +104,8 @@ class FloExecutionResultSpec extends Specification {
                 it.testName == settings.testName
                 it.floStepName == floStepName
                 it.threads == 1
-                it.iterations == 2
-                it.rampup == 3
+                it.iterations == 3
+                it.rampup == 100
                 it.perc50 == 50
                 it.perc80 == 80
                 it.perc90 == 90

@@ -65,17 +65,20 @@ class FloRunnaSettings {
     }
 
     FloRunnaSettings(
-        String testName,
         int threads,
+        long duration,
+        long rampup,
         int iterations,
-        long rampup
+        String testName,
+        boolean outputEnabled = true
     ) {
-        this.threads = threads
-        this.iterations = iterations
-        this.duration = 0
-        this.rampup = rampup
-        this.testName = testName
-        this.outputEnabled = true
+        // using default values in-case negative values passed in
+        this.threads = threads > 0 ? threads : 8
+        this.duration = duration > 0 ? duration : 8000
+        this.iterations = iterations > 0 ? iterations : 0
+        this.rampup = rampup > 0 ? rampup : 1000
+        this.testName = testName?.trim() ? testName : "Undefined Test Name"
+        this.outputEnabled = outputEnabled
     }
 
     FloRunnaSettings setDebug(boolean debugEnabled) {

@@ -20,13 +20,13 @@ class ModelFactory {
         Map<GString, FloExecutionResult> results = [:]
         stepCount.times {
             results["step$it"] = new FloExecutionResult(
-                    it,
-                    "step$it",
-                    settings,
-                    startTime,
-                    endTime,
-                    UUID.randomUUID().toString(),
-                    floStepResults
+                it,
+                "step$it",
+                settings,
+                startTime,
+                endTime,
+                UUID.randomUUID().toString(),
+                floStepResults
             )
         }
         results
@@ -37,7 +37,7 @@ class ModelFactory {
     }
 
     static FloRunnaSettings createFloRunnaSettingsIterations() {
-        new FloRunnaSettings("test name example", 1, 2, 3)
+        new FloRunnaSettings(1, 2, 100, 3, "test name example", true)
     }
 
     private static FloError createFloError() {
