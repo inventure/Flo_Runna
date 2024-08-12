@@ -19,7 +19,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    some-label: "build-httpclient-${BUILD_NUMBER}"
+    some-label: "build-florunna-${BUILD_NUMBER}"
 spec:
   containers:
   - name: gradle
@@ -28,21 +28,19 @@ spec:
     - cat
     tty: true
     volumeMounts:
-    - mountPath: /var/run/docker.sock
-      name: docker-socket
+    - name: shared
+      mountPath: /tmp/ecr-config
   - name: tools
-    image: 004384079765.dkr.ecr.us-west-2.amazonaws.com/devops/jenkins-slave:v1.19
+    image: 004384079765.dkr.ecr.us-west-2.amazonaws.com/devops/jenkins-slave:v1.22
     command:
     - cat
     tty: true
     volumeMounts:
-    - mountPath: /var/run/docker.sock
-      name: docker-socket
+    - name: shared
+      mountPath: /tmp/ecr-config
   volumes:
-  - name: docker-socket
-    hostPath:
-      path: /var/run/docker.sock
-      type: File
+  - name: shared
+    emptyDir: {}
 """
         }
     }
@@ -50,6 +48,7 @@ spec:
         JFROG_ARTIFACTORY_CREDENTIALS = credentials('55bdcd8c-e944-41dc-a5cc-9c3aa5616bdc')
         GITHUB_ACCESS_TOKEN = credentials('3ba79c7b-80de-4765-9f6c-959d0c83c492')
         GITHUB_COMMON_CREDS = credentials('b14ed09f-ca8d-4fa9-853b-8c2e0288d438')
+        DOCKER_CONFIG = "/tmp/ecr-config"
     }
 
     stages {
@@ -125,8 +124,10 @@ spec:
             ])
 
             //Notify Slack
-            container('tools') {
-                slack_notify()
+            node("build-florunna-${BUILD_NUMBER}") {
+                container('tools') {
+                    slack_notify()
+                }
             }
         }
     }
