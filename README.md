@@ -41,13 +41,89 @@ can be reused across different test cases.  So, in cases where we have written r
 those libraries can then be reused in our Flo Runna performance tests.
 
 ## Maven
-TODO. Publish to Maven Central and put instructions here on how to import using gradle and maven.
+
+Flo Runna is published to the Tala Artifactory repository. Add the repository and dependency to your build configuration as shown below.
+
+### Gradle
+
+Add the repository and dependency to your `build.gradle`:
+
+```groovy
+repositories {
+    maven {
+        url "https://tala.jfrog.io/tala/maven-snapshot-virtual"
+        credentials {
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+        }
+    }
+}
+
+dependencies {
+    testImplementation 'co.tala.performance.flo:flo-runna:0.1.7'
+}
+```
+
+Store your Artifactory credentials in `~/.gradle/gradle.properties` (never commit credentials to source control):
+
+```properties
+artifactory_user=<your-username>
+artifactory_password=<your-api-key>
+```
+
+### Maven
+
+Add the repository and dependency to your `pom.xml`:
+
+```xml
+<repositories>
+    <repository>
+        <id>tala-artifactory</id>
+        <url>https://tala.jfrog.io/tala/maven-snapshot-virtual</url>
+    </repository>
+</repositories>
+
+<dependencies>
+    <dependency>
+        <groupId>co.tala.performance.flo</groupId>
+        <artifactId>flo-runna</artifactId>
+        <version>0.1.7</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+```
+
+Configure your Artifactory credentials in `~/.m2/settings.xml`:
+
+```xml
+<settings>
+    <servers>
+        <server>
+            <id>tala-artifactory</id>
+            <username>${artifactory_user}</username>
+            <password>${artifactory_password}</password>
+        </server>
+    </servers>
+</settings>
+```
 
 ## How to create a Load Test
 In this example, we will hypothetically assume that we have a client library already written.
 
 ### Initialize a FloRunna object
-There are 2 ways to initialize a FloRunna object.
+There are several ways to initialize a `FloRunna` object, depending on whether you want to hardcode settings,
+read them from system properties, or control the number of iterations.
+
+#### FloRunnaSettings parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `threads` | `int` | `8` | Number of parallel threads to run the workflow on |
+| `duration` | `long` (ms) | `8000` | Total duration of the load test in milliseconds |
+| `rampup` | `long` (ms) | `1000` | Time in milliseconds to ramp up to the full thread count |
+| `iterations` | `int` | `0` | Maximum number of workflow executions per thread. When `0`, the test runs for the full `duration` |
+| `testName` | `String` | — | Name of the test, used as the output directory name for reports |
+| `outputEnabled` | `boolean` | `true` | When `true`, writes performance reports to `/build/flo-runna-reports/{testName}/` |
 
 In this example, we hardcode the threads, rampup, and duration.
 ```groovy
@@ -68,6 +144,18 @@ FloRunna floRunna = new FloRunna(settings)
 The test would then have to be run from command line as follows
 ```
  ./gradlew test -Dthreads=16 -Dduration=300000 -Drampup=60000 --tests *FloRunnaIntegrationTest
+```
+
+In this example, we limit the run to a fixed number of iterations instead of a time-based duration.
+The test will stop when all iterations are complete, even if the `duration` has not elapsed.
+```groovy
+int threads = 8
+long duration = 180000
+long rampup = 60000
+int iterations = 100
+String testName = "Flo Runna Integration Test"
+FloRunnaSettings settings = new FloRunnaSettings(threads, duration, rampup, iterations, testName)
+FloRunna floRunna = new FloRunna(settings)
 ```
 
 ### Build and execute a WorkFlo
