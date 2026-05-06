@@ -1,2 +1,31 @@
+pluginManagement {
+    repositories {
+        //  When running in Jenkins, load the credentials from envars.
+        //  When running locally, pull it from the default gradle.properties.
+        //
+        //  To set the credentials for all Gradle projects, add the following to ~/.gradle/gradle.properties locally:
+        //  systemProp.artifactory_user=your_jfrog_username
+        //  systemProp.artifactory_password=your_jfrog_api_key
+        def artifactoryUser = System.getenv('JFROG_ARTIFACTORY_CREDENTIALS_USR')
+            ?: System.getProperty('artifactory_user')
+            ?: System.getenv('ARTIFACTORY_USER')
+            ?: (gradle.ext.has('artifactory_user') ? gradle.ext.artifactory_user : '')
+        def artifactoryPassword = System.getenv('JFROG_ARTIFACTORY_CREDENTIALS_PSW')
+            ?: System.getProperty('artifactory_password')
+            ?: System.getenv('ARTIFACTORY_PASSWORD')
+            ?: (gradle.ext.has('artifactory_password') ? gradle.ext.artifactory_password : '')
+        maven {
+            url 'https://tala.jfrog.io/artifactory/maven-central-virtual/'
+            if (artifactoryUser) {
+                credentials {
+                    username = artifactoryUser
+                    password = artifactoryPassword
+                }
+            }
+        }
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = 'flo-runna'
 
