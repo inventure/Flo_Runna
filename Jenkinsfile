@@ -1,5 +1,6 @@
 #!groovy
 @Library('atlas_shared')
+import groovy.json.JsonOutput
 
 def buildNumber = env.BUILD_NUMBER
 def branchName = env.BRANCH_NAME
@@ -22,7 +23,7 @@ metadata:
 spec:
   containers:
   - name: gradle
-    image: tala-tala-dockerhub.jfrog.io/gradle:7.6.2-jdk17-focal
+    image: gradle:jdk10
     command:
     - cat
     tty: true
@@ -30,7 +31,7 @@ spec:
     - name: shared
       mountPath: /tmp/ecr-config
   - name: tools
-    image: tala-tala-dockerhub.jfrog.io/gradle:8.5-jdk17-focal
+    image: 004384079765.dkr.ecr.us-west-2.amazonaws.com/devops/jenkins-slave:v1.22
     command:
     - cat
     tty: true
@@ -64,7 +65,7 @@ spec:
                     sh '''
                         export ORG_GRADLE_PROJECT_artifactory_user=$JFROG_ARTIFACTORY_CREDENTIALS_USR \
                         && export ORG_GRADLE_PROJECT_artifactory_password=$JFROG_ARTIFACTORY_CREDENTIALS_PSW \
-                        && ./gradlew clean test build
+                        && ./gradlew clean build
                     '''
                 }
             }
@@ -101,9 +102,9 @@ spec:
             ])
 
             //Publish Spock Report
-            archiveArtifacts(artifacts: 'build/spock-reports/**', allowEmptyArchive: true)
+            archiveArtifacts(artifacts: 'build/spock-reports/**')
             publishHTML(target: [
-                    allowMissing         : true,
+                    allowMissing         : false,
                     alwaysLinkToLastBuild: false,
                     keepAll              : true,
                     reportDir            : 'build/spock-reports',
